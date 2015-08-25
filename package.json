@@ -1,0 +1,36 @@
+{
+  "name": "js-gol",
+  "description": "Simple implementation of Conway's Game of Life.",
+  "license": "MIT",
+  "version": "0.0.0",
+  "homepage": "https://github.com/rharel/js-gol",
+  "author": {
+    "name": "Raoul Harel",
+    "homepage": "https://github.com/rharel"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rharel/js-gol.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "/LICENSE.txt"
+    }
+  ],
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-contrib-uglify": "^0.9.1",
+    "grunt-mocha-cli": "^1.14.0",
+    "load-grunt-tasks": "^3.2.0",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {},
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": ["conway", "game of life", "cellular", "automata"]
+}

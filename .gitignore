@@ -3,3 +3,9 @@
 
 # Package managers
 node_modules/
+
+bower_components/*
+!bower_components/js-gol
+
+bower_components/js-gol/*
+!bower_components/js-gol/dist

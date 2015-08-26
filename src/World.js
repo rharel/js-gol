@@ -264,7 +264,7 @@
      * Traverses all living cells.
      *
      * @param callback
-     *    A method taking one parameter of type {x:, y:}.
+     *    A method taking the cell's position: callback(x, y)
      *
      * @details
      *    The given callback is called for each living cell in the simulation.

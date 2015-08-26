@@ -54,7 +54,7 @@ Advance the simulation one generation into the future.
 world.traverse(callback)
 ```
 
-Iterate over all living cells with `traverse`. This invokes a given `callback` for each living cell in the simulation. The return value of `callback` should be a boolean which signals whether to stop iterating. Therefore, if you wish to stop the iteration, simply return `true`.
+Iterate over all living cells with `traverse`. This invokes a given `callback(x, y)` for each living cell in the simulation. The return value of `callback` should be a boolean which signals whether to stop iterating. Therefore, if you wish to stop the iteration, simply return `true`.
 
 
 ## License

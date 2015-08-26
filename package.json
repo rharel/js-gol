@@ -2,7 +2,7 @@
   "name": "js-gol",
   "description": "Simple implementation of Conway's Game of Life.",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/rharel/js-gol",
   "author": {
     "name": "Raoul Harel",

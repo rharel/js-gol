@@ -40,24 +40,8 @@ html, body {
     font-size: 16pt;
 }
 
-/*#controls {*/
-    /*position: fixed;*/
-
-    /*top: 15px;*/
-    /*left: 15px;*/
-
-    /*text-align: center;*/
-/*}*/
-
 .btn-lg {
     margin-top: 10px;
 
     font-size: 22pt;
 }
-
-/*#main-canvas {*/
-    /*width: 100%;*/
-    /*height: 100%;*/
-
-    /*background-color: lightgoldenrodyellow;*/
-/*}*/

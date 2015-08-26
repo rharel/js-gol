@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/rharel/js-gol.svg)](https://travis-ci.org/rharel/js-gol)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com)
 
 ## What is this?

@@ -9,13 +9,13 @@
 (function() {
 
   /**
-   * @author Raoul Harel
-   * @license The MIT license (LICENSE.txt)
-   * @copyright 2015 Raoul Harel
-   * @url https://github.com/rharel/js-gol
+   * Create a new simulation.
+   *
+   * @param width
+   * @param height
+   *
+   * @constructor
    */
-
-
   function World(width, height) {
 
     this._width = width;
@@ -38,9 +38,17 @@
     _isOutside: function(x, y) {
 
       return x < 0 || x >= this._width ||
-        y < 0 || y >= this._height;
+             y < 0 || y >= this._height;
     },
 
+    /**
+     * Mark a cell as 'dirty'. Only dirty cells are updated during a step().
+     *
+     * @param x
+     * @param y
+     *
+     * @private
+     */
     _setDirty: function(x, y) {
 
       if (!this._dirty.hasOwnProperty(x)) { this._dirty[x] = {}; }
@@ -48,6 +56,14 @@
       this._dirty[x][y] = true;
     },
 
+    /**
+     * Increment the neighbours-counter for a cell.
+     *
+     * @param x
+     * @param y
+     *
+     * @private
+     */
     _addNeighbour: function(x, y) {
 
       x = x === this._width ? 0 : x === -1 ? this._width - 1 : x;
@@ -61,6 +77,14 @@
       this._setDirty(x, y);
     },
 
+    /**
+     * Decrement the neighbours-counter for a cell.
+     *
+     * @param x
+     * @param y
+     *
+     * @private
+     */
     _removeNeighbour: function(x, y) {
 
       x = x === this._width ? 0 : x === -1 ? this._width - 1 : x;
@@ -76,6 +100,14 @@
       this._setDirty(x, y);
     },
 
+    /**
+     * Get the state of a cell (alive or dead).
+     *
+     * @param x
+     * @param y
+     *
+     * @returns {boolean} True if alive.
+     */
     get: function(x, y) {
 
       if (this._cells.hasOwnProperty(x)) {
@@ -87,6 +119,17 @@
       return false;
     },
 
+    /**
+     * Spawn a new living cell at given position.
+     *
+     * @param x
+     * @param y
+     *
+     * @returns {boolean}
+     *    True if the cell was spawned successfully.
+     *    An unsuccessful spawn happens when the given position is out of world bounds, or
+     *    when it already contains a living cell.
+     */
     spawn: function(x, y) {
 
       if (this._isOutside(x, y) || this.get(x, y)) { return false; }
@@ -110,6 +153,17 @@
       return true;
     },
 
+    /**
+     * Kill a cell at given position.
+     *
+     * @param x
+     * @param y
+     *
+     * @returns {boolean}
+     *    True if the cell was killed successfully.
+     *    An unsuccessful kill happens when the given position is out of world bounds, or
+     *    when it already contains a dead cell.
+     */
     kill: function(x, y) {
 
       if (this._isOutside(x, y) || !this.get(x, y)) { return false; }
@@ -132,6 +186,16 @@
       return true;
     },
 
+    /**
+     * Steps a single cell.
+     *
+     * @param x
+     * @param y
+     *
+     * @returns {boolean} The new state of the cell.
+     *
+     * @private
+     */
     _step_single: function(x, y) {
 
       var currentState = this.get(x, y);
@@ -148,6 +212,14 @@
       else { return false; }
     },
 
+    /**
+     * Advance the simulation one generation into the future.
+     *
+     * @details
+     *    All cells marked as dirty are evolved individually. In the process,
+     *    new cells will be marked as dirty for the benefit of the next time step()
+     *    is called.
+     */
     step: function() {
 
       this._spawned = [];
@@ -188,6 +260,17 @@
       );
     },
 
+    /**
+     * Traverses all living cells.
+     *
+     * @param callback
+     *    A method taking one parameter of type {x:, y:}.
+     *
+     * @details
+     *    The given callback is called for each living cell in the simulation.
+     *    The callback's return value should be a boolean indicating whether to abort iteration.
+     *    So if the callback returns true, the traversal stops.
+     */
     traverse: function(callback) {
 
       var abortRequested = false;
@@ -208,6 +291,11 @@
     get width() { return this._width; },
     get height() { return this._height; },
 
+    /**
+     * Get the number of living cells.
+     *
+     * @returns {number}
+     */
     get population() { return this._population; }
   };
 

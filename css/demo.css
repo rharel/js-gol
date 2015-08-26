@@ -1,0 +1,63 @@
+/**
+ * @author Raoul Harel
+ * @license The MIT license (LICENSE.txt)
+ * @copyright 2015 Raoul Harel
+ * @url https://github.com/rharel/js-gol
+ */
+
+
+html, body {
+    overflow: hidden;
+
+    height: 100%;
+}
+
+.container-fill {
+    margin: 0;
+
+    height: 100%;
+}
+
+.row-controls {
+    padding: 15px;
+
+    text-align: center;
+}
+
+#pattern-dropdown {
+    margin-top: 10px;
+}
+
+.dropdown-toggle {
+    font-size: 22pt;
+}
+
+.dropdown-header {
+    font-size: 16pt;
+}
+
+.dropdown-menu {
+    font-size: 16pt;
+}
+
+/*#controls {*/
+    /*position: fixed;*/
+
+    /*top: 15px;*/
+    /*left: 15px;*/
+
+    /*text-align: center;*/
+/*}*/
+
+.btn-lg {
+    margin-top: 10px;
+
+    font-size: 22pt;
+}
+
+/*#main-canvas {*/
+    /*width: 100%;*/
+    /*height: 100%;*/
+
+    /*background-color: lightgoldenrodyellow;*/
+/*}*/

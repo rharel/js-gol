@@ -1,0 +1,30 @@
+{
+  "name": "js-gol",
+  "version": "0.0.0",
+  "authors": [
+    "Raoul Harel <raoulhaa@gmail.com>"
+  ],
+  "description": "Simple implementation of Conway's Game of Life.",
+  "main": "dist/gol.min.js",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "conway",
+    "game",
+    "of",
+    "life",
+    "cellular",
+    "automata"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/rharel/js-gol",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

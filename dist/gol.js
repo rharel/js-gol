@@ -178,6 +178,23 @@ World.prototype = {
     );
   },
 
+  traverse: function(callback) {
+
+    var abortRequested = false;
+
+    for (var x in this._cells) {
+
+      if (!this._cells.hasOwnProperty(x)) { continue; }
+
+      for (var y in this._cells[x]) {
+
+        if (this._cells[x].hasOwnProperty(y)) { abortRequested = callback(x, y); }
+
+        if (abortRequested) { return; }
+      }
+    }
+  },
+
   get width() { return this._width; },
   get height() { return this._height; },
 

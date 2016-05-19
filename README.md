@@ -19,10 +19,10 @@ Include in the browser using `<script src="path/to/gol.min.js"></script>`
 
 ### Create
 ```javascript
-var world = new Gol.World(width, height);
+var world = new Gol.World(width, height, is_wrapped);
 ```
 
-This creates a new Game of Life universe, with the specified width and height. Note that in the current implementation the world is wrapped.
+This creates a new Game of Life universe, with the specified width and height, and optional wrap parameter.
 
 
 ### Populate
@@ -51,10 +51,16 @@ Advance the simulation one generation into the future.
 ### Inspect
 
 ```javascript
-world.traverse(callback)
+world.inspect(x, y)
 ```
 
-Iterate over all living cells with `traverse`. This invokes a given `callback` for each living cell in the simulation. The return value of `callback` should be a boolean which signals whether to continue iterating. Therefore, if you wish to stop the iteration, simply return `false`.
+Gets the state of a cell (false -> dead, true -> alive)
+
+```javascript
+world.inspect_all(callback)
+```
+
+Iterate over all living cells with `inspect_all`. This invokes a given `callback` for each living cell in the simulation. `callback` should accept one argument of type `{x:, y:}`. The return value of `callback` should be a boolean which signals whether to abort iteration. Therefore, if you wish to stop the iteration, simply return `true`.
 
 
 ## License

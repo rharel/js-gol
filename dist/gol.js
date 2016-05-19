@@ -8,52 +8,132 @@
 
 (function() {
 
+  function HashSet(hash) {
+
+    this._hash = hash || HashSet.HASH_IDENTITY;
+    this._items = {};
+  }
+  HashSet.HASH_IDENTITY = function(item) { return item; };
+  HashSet.prototype = {
+
+    constructor: HashSet,
+
+    contains: function(item) {
+
+      return this._items.hasOwnProperty(this._hash(item));
+    },
+
+    add: function(item) {
+
+      this._items[this._hash(item)] = item;
+    },
+
+    remove: function(item) {
+
+      delete this._items[this._hash(item)];
+    },
+
+    clear: function() {
+
+      this._items = {};
+    },
+
+    enumerate: function(callback) {
+
+      var key, item;
+      for (key in this._items) {
+
+        if (this._items.hasOwnProperty(key)) {
+
+          item = this._items[key];
+          if (callback(item)) { return; }
+        }
+      }
+    }
+  };
+
+  function HashMap(hash) {
+
+    this._hash = hash || function(item) { return item; };
+    this._kv = {};  // key-value pairs
+  }
+  HashMap.prototype = {
+
+    constructor: HashMap,
+
+    contains: function(key) {
+
+      return this._kv.hasOwnProperty(this._hash(key));
+    },
+
+    get: function(key) {
+
+      return this._kv[this._hash(key)];
+    },
+
+    set: function(key, value) {
+
+      this._kv[this._hash(key)] = value;
+    },
+
+    remove: function(key) {
+
+      delete this._kv[this._hash(key)];
+    },
+
+    clear: function() {
+
+      this._kv = {};
+    },
+
+    enumerate: function(callback) {
+
+      var key, value;
+      for (key in this._kv) {
+
+        if (this._kv.hasOwnProperty(key)) {
+
+          value = this._kv[key];
+          if (callback(value)) { return; }
+        }
+      }
+    }
+  };
+
+  function hash_point(p) {
+
+    return Math.round(p.x) + ',' + Math.round(p.y);
+  }
+
   /**
    * Create a new simulation.
    *
    * @param width
    * @param height
+   * @param is_wrapped
    *
    * @constructor
    */
-  function World(width, height) {
+  function World(width, height, is_wrapped) {
 
     this._width = width;
     this._height = height;
+    this._is_wrapped = typeof is_wrapped !== 'undefined' ? is_wrapped : false;
 
-    this._cells = {};
-    this._neighbours = {};
-    this._dirty = {};
+    this._live_cells = new HashSet(hash_point);
+    this._neighbour_count = new HashMap(hash_point);
+    this._dirty = new HashSet(hash_point);
 
     this._population = 0;
-
-    this._spawned = [];
-    this._died = [];
   }
-
   World.prototype = {
 
     constructor: World,
 
-    _isOutside: function(x, y) {
+    is_out_of_bounds: function(x, y) {
 
       return x < 0 || x >= this._width ||
              y < 0 || y >= this._height;
-    },
-
-    /**
-     * Mark a cell as 'dirty'. Only dirty cells are updated during a step().
-     *
-     * @param x
-     * @param y
-     *
-     * @private
-     */
-    _setDirty: function(x, y) {
-
-      if (!this._dirty.hasOwnProperty(x)) { this._dirty[x] = {}; }
-
-      this._dirty[x][y] = true;
     },
 
     /**
@@ -64,17 +144,28 @@
      *
      * @private
      */
-    _addNeighbour: function(x, y) {
+    _add_neighbour: function(x, y) {
 
-      x = x === this._width ? 0 : x === -1 ? this._width - 1 : x;
-      y = y === this._height ? 0 : y === -1 ? this._height - 1 : y;
+      if (!this._is_wrapped && this.is_out_of_bounds(x, y)) { return; }
 
-      if (!this._neighbours.hasOwnProperty(x)) { this._neighbours[x] = {}; }
-      if (!this._neighbours[x].hasOwnProperty(y)) { this._neighbours[x][y] = 0; }
+      x = x === this._width ? 0 :
+          x === -1 ? this._width - 1 :
+          x;
+      y = y === this._height ? 0 :
+          y === -1 ? this._height - 1 :
+          y;
+      var p = {x: x, y: y};
 
-      this._neighbours[x][y] += 1;
+      if (!this._neighbour_count.contains(p)) {
 
-      this._setDirty(x, y);
+        this._neighbour_count.set(p, 0);
+      }
+      this._neighbour_count.set(
+
+        p, this._neighbour_count.get(p) + 1
+      );
+
+      this._dirty.add(p);
     },
 
     /**
@@ -85,38 +176,31 @@
      *
      * @private
      */
-    _removeNeighbour: function(x, y) {
+    _remove_neighbour: function(x, y) {
 
-      x = x === this._width ? 0 : x === -1 ? this._width - 1 : x;
-      y = y === this._height ? 0 : y === -1 ? this._height - 1 : y;
+      if (!this._is_wrapped && this.is_out_of_bounds(x, y)) { return; }
 
-      this._neighbours[x][y] -= 1;
+      x = x === this._width ? 0 :
+          x === -1 ? this._width - 1 :
+          x;
+      y = y === this._height ? 0 :
+          y === -1 ? this._height - 1 :
+          y;
+      var p = {x: x, y: y};
 
-      if (this._neighbours[x][y] === 0) {
+      if (this._neighbour_count.contains(p)) {
 
-        delete this._neighbours[x][y];
+        this._neighbour_count.set(
+
+          p, this._neighbour_count.get(p) - 1
+        );
+      }
+      if (this._neighbour_count.get(p) <= 0) {
+
+        this._neighbour_count.remove(p);
       }
 
-      this._setDirty(x, y);
-    },
-
-    /**
-     * Get the state of a cell (alive or dead).
-     *
-     * @param x
-     * @param y
-     *
-     * @returns {boolean} True if alive.
-     */
-    get: function(x, y) {
-
-      if (this._cells.hasOwnProperty(x)) {
-
-        var column = this._cells[x];
-        if (column.hasOwnProperty(y)) { return true; }
-      }
-
-      return false;
+      this._dirty.add(p);
     },
 
     /**
@@ -132,23 +216,23 @@
      */
     spawn: function(x, y) {
 
-      if (this._isOutside(x, y) || this.get(x, y)) { return false; }
+      if (this.is_out_of_bounds(x, y) || this.inspect(x, y)) { return false; }
 
-      if (!this._cells.hasOwnProperty(x)) { this._cells[x] = {}; }
-      this._cells[x][y] = true;
+      var p = {x: x, y: y};
 
+      this._live_cells.add(p);
       ++ this._population;
 
-      this._addNeighbour(x - 1, y - 1);
-      this._addNeighbour(x - 1, y);
-      this._addNeighbour(x - 1, y + 1);
-      this._addNeighbour(x, y - 1);
-      this._addNeighbour(x, y + 1);
-      this._addNeighbour(x + 1, y - 1);
-      this._addNeighbour(x + 1, y);
-      this._addNeighbour(x + 1, y + 1);
+      this._add_neighbour(x - 1, y - 1);
+      this._add_neighbour(x - 1, y);
+      this._add_neighbour(x - 1, y + 1);
+      this._add_neighbour(x, y - 1);
+      this._add_neighbour(x, y + 1);
+      this._add_neighbour(x + 1, y - 1);
+      this._add_neighbour(x + 1, y);
+      this._add_neighbour(x + 1, y + 1);
 
-      this._setDirty(x, y);
+      this._dirty.add(p);
 
       return true;
     },
@@ -166,22 +250,23 @@
      */
     kill: function(x, y) {
 
-      if (this._isOutside(x, y) || !this.get(x, y)) { return false; }
+      if (this.is_out_of_bounds(x, y) || !this.inspect(x, y)) { return false; }
 
-      delete this._cells[x][y];
+      var p = {x: x, y: y};
+      this._live_cells.remove(p);
 
       -- this._population;
 
-      this._removeNeighbour(x - 1, y - 1);
-      this._removeNeighbour(x - 1, y);
-      this._removeNeighbour(x - 1, y + 1);
-      this._removeNeighbour(x, y - 1);
-      this._removeNeighbour(x, y + 1);
-      this._removeNeighbour(x + 1, y - 1);
-      this._removeNeighbour(x + 1, y);
-      this._removeNeighbour(x + 1, y + 1);
+      this._remove_neighbour(x - 1, y - 1);
+      this._remove_neighbour(x - 1, y);
+      this._remove_neighbour(x - 1, y + 1);
+      this._remove_neighbour(x, y - 1);
+      this._remove_neighbour(x, y + 1);
+      this._remove_neighbour(x + 1, y - 1);
+      this._remove_neighbour(x + 1, y);
+      this._remove_neighbour(x + 1, y + 1);
 
-      this._setDirty(x, y);
+      this._dirty.add(p);
 
       return true;
     },
@@ -198,17 +283,18 @@
      */
     _step_single: function(x, y) {
 
-      var currentState = this.get(x, y);
-      var nNeighbours = +currentState;
+      var p = {x: x, y: y};
 
-      if (this._neighbours.hasOwnProperty(x) &&
-        this._neighbours[x].hasOwnProperty(y)) {
+      var current_state = this.inspect(x, y);
+      var n_neighbours = +current_state;
 
-        nNeighbours += this._neighbours[x][y];
+      if (this._neighbour_count.contains(p)) {
+
+        n_neighbours += this._neighbour_count.get(p);
       }
 
-      if (nNeighbours === 3) { return true; }
-      if (nNeighbours === 4) { return currentState; }
+      if (n_neighbours === 3) { return true; }
+      else if (n_neighbours === 4) { return current_state; }
       else { return false; }
     },
 
@@ -222,77 +308,73 @@
      */
     step: function() {
 
-      this._spawned = [];
-      this._died = [];
+      var spawned = [], died = [];
+      var is_alive, was_alive;
 
-      for (var x in this._dirty) {
+      this._dirty.enumerate((function(p) {
 
-        if (!this._dirty.hasOwnProperty(x)) { continue; }
+        was_alive = this.inspect(p.x, p.y);
+        is_alive = this._step_single(p.x, p.y);
 
-        var column = this._dirty[x];
-        for (var y in column) {
+        if (is_alive && !was_alive) {
 
-          if (!column.hasOwnProperty(y)) { continue; }
-
-          var result = this._step_single(x, y);
-
-          if (result && !this.get(x, y)) { this._spawned.push({x: +x, y: +y}); }
-          else if (!result && this.get(x, y)) { this._died.push({x: +x, y: +y}); }
+          spawned.push(p);
         }
-      }
+        else if (!is_alive && was_alive) {
 
-      this._dirty = {};
+          died.push(p);
+        }
+      }).bind(this));
+      this._dirty.clear();
 
-      this._spawned.forEach(
-        (function(p) {
+      spawned.forEach((function(p) {
 
-          this.spawn(p.x, p.y);
+        this.spawn(p.x, p.y);
+      }).bind(this));
 
-        }).bind(this)
-      );
+      died.forEach((function(p) {
 
-      this._died.forEach(
-        (function(p) {
+        this.kill(p.x, p.y);
+      }).bind(this));
+    },
 
-          this.kill(p.x, p.y);
+    /**
+     * Get the state of a cell (alive or dead).
+     *
+     * @param x
+     * @param y
+     *
+     * @returns {boolean} True if alive.
+     */
+    inspect: function(x, y) {
 
-        }).bind(this)
-      );
+      return this._live_cells.contains({x: x, y: y});
     },
 
     /**
      * Traverses all living cells.
      *
      * @param callback
-     *    A method taking the cell's position: callback(x, y)
+     *    A method taking two parameters (x, y).
      *
      * @details
      *    The given callback is called for each living cell in the simulation.
      *    The callback's return value should be a boolean indicating whether to abort iteration.
-     *    So if the callback returns true, the traversal stops.
+     *    So if the callback returns true, traversal stops.
      */
-    traverse: function(callback) {
+    inspect_all: function(callback) {
 
-      var abortRequested = false;
-
-      for (var x in this._cells) {
-
-        if (!this._cells.hasOwnProperty(x)) { continue; }
-
-        for (var y in this._cells[x]) {
-
-          if (this._cells[x].hasOwnProperty(y)) { abortRequested = callback(x, y); }
-
-          if (abortRequested) { return; }
-        }
-      }
+      this._live_cells.enumerate(callback);
     },
 
     get width() { return this._width; },
     get height() { return this._height; },
 
+    get is_wrapped() { return this._is_wrapped; },
+    set is_wrapped(value) { this._is_wrapped = !!value; },
+
     /**
-     * Get the number of living cells.
+     * Get the number of live cells.
      *
      * @returns {number}
      */

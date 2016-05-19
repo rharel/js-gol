@@ -12,7 +12,7 @@ var expect = require('chai').expect;
 
 describe ('World', function() {
 
-  describe ('fresh instance', function() {
+  describe ('default instance', function() {
 
     var w = 1, h = 2;
     var world = new World(w, h);
@@ -21,6 +21,32 @@ describe ('World', function() {
 
       expect(world.width).to.be.equal(w);
       expect(world.height).to.be.equal(h);
+    });
+
+    it ('should not be wrapped', function() {
+
+      expect(world.is_wrapped).to.be.equal(false);
+    });
+
+    it ('should have zero population', function() {
+
+      expect(world.population).to.be.equal(0);
+    });
+  });
+  describe ('wrapped instance', function() {
+
+    var w = 1, h = 2;
+    var world = new World(w, h, true);
+
+    it ('should have given width and height', function() {
+
+      expect(world.width).to.be.equal(w);
+      expect(world.height).to.be.equal(h);
+    });
+
+    it ('should be wrapped', function() {
+
+      expect(world.is_wrapped).to.be.equal(true);
     });
 
     it ('should have zero population', function() {
@@ -40,7 +66,7 @@ describe ('World', function() {
 
     it ('should be dead before spawn', function() {
 
-      expect(world.get(0, 0)).to.be.equal(false);
+      expect(world.inspect(0, 0)).to.be.equal(false);
     });
 
     it ('should not spawn out of bounds', function() {
@@ -51,7 +77,7 @@ describe ('World', function() {
     it ('should spawn on an empty cell', function() {
 
       expect(world.spawn(0, 0)).to.be.equal(true);
-      expect(world.get(0, 0)).to.be.equal(true);
+      expect(world.inspect(0, 0)).to.be.equal(true);
       expect(world.population).to.be.equal(1);
     });
 
@@ -61,7 +87,6 @@ describe ('World', function() {
       expect(world.spawn(0, 0)).to.be.equal(false);
     });
   });
-
   describe ('killing cells', function() {
 
     var w = 2, h = 2;
@@ -86,12 +111,12 @@ describe ('World', function() {
       world.spawn(0, 0);
 
       expect(world.kill(0, 0)).to.be.equal(true);
-      expect(world.get(0, 0)).to.be.equal(false);
+      expect(world.inspect(0, 0)).to.be.equal(false);
       expect(world.population).to.be.equal(0);
     });
   });
 
-  describe('stepping', function() {
+  describe('evolution', function() {
 
     var w = 5, h = 5;
     var c = 2;
@@ -107,13 +132,12 @@ describe ('World', function() {
       if (nNeighbours >= 2) { world.spawn(c + 1, c); }
       if (nNeighbours >= 1) { world.spawn(c + 1, c + 1); }
     }
-
     function testCase(world, nNeighbours, expectedResult) {
 
       populate(world, nNeighbours);
       world.step();
 
-      expect(world.get(c, c)).to.be.equal(expectedResult);
+      expect(world.inspect(c, c)).to.be.equal(expectedResult);
     }
 
     describe ('stepping a live cell', function() {
@@ -148,7 +172,6 @@ describe ('World', function() {
         testCase(world, 8, false); reset();
       });
     });
-
     describe ('stepping a dead cell', function() {
 
       var world;
@@ -175,6 +198,41 @@ describe ('World', function() {
         testCase(world, 6, false); reset();
         testCase(world, 7, false); reset();
         testCase(world, 8, false); reset();
+      });
+    });
+  });
+
+  describe('inspection', function() {
+
+    var w = 1, h = 3;
+    var world = new World(w, h);
+
+    world.spawn(0, 0);
+    world.spawn(0, 2);
+
+    it ('should have population == 2', function() {
+
+      expect(world.population).to.be.equal(2);
+    });
+
+    it ('should inspect all living cells', function() {
+
+      var visited = [];
+      function callback(p) {
+
+        visited.push(p);
+      }
+
+      world.inspect_all(callback);
+
+      expect(visited.length).to.be.equal(2);
+      visited.forEach(function(p) {
+
+        expect(p.x).to.be.equal(0);
+        if (p.y != 0 && p.y != 2) {
+
+          expect.fail();
+        }
       });
     });
   });

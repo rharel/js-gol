@@ -1,0 +1,23 @@
+/**
+ * @author Raoul Harel
+ * @license The MIT license (LICENSE.txt)
+ * @copyright 2016 Raoul Harel
+ * @url https://github.com/rharel/js-gol
+ */
+body {
+  margin: 0;
+  padding: 0; }
+
+#content {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center; }
+  @media (max-width: 480px) {
+    #content {
+      width: 100%; } }
+
+a {
+  text-decoration: none; }
+
+/*# sourceMappingURL=demo.css.map */

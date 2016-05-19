@@ -128,7 +128,7 @@
             }
         };
 
-        var elements = document.getElementsByClassName('fig3-animated-canvas');
+        var elements = document.getElementsByClassName('animation');
         var i, element;
         var pattern;
         for (i = 0; i < elements.length; ++i) {
@@ -141,8 +141,6 @@
                 pattern.canvas = element;
                 pattern.view = new Gol.CanvasView(pattern.canvas, view_style);
                 pattern.data = Gol.parse_rle(pattern.rle);
-                //pattern.offset.x = Math.round(0.5 * (pattern.world.width - pattern.data.width));
-                //pattern.offset.y = Math.round(0.5 * (pattern.world.height - pattern.data.height));
 
                 _reset(pattern);
             }
@@ -151,10 +149,9 @@
 
     function _get_pattern(canvas_id) {
 
-        var pattern_name = canvas_id.slice(5);
-        if (patterns.hasOwnProperty(pattern_name)) {
+        if (patterns.hasOwnProperty(canvas_id)) {
 
-            return patterns[pattern_name];
+            return patterns[canvas_id];
         }
         else {
 
